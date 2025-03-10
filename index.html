@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Piano Key Quiz</title>
+  <!-- Tailwind CSS for styling -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <!-- Link to the PWA manifest -->
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body class="bg-blue-50">
+  <div id="root"></div>
+  
+  <!-- React and ReactDOM -->
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <!-- Babel for in-browser transformation (development only) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Piano Key Quiz App Code -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const PianoKeyQuiz = () => {
+      const [currentLetter, setCurrentLetter] = useState("");
+      const [counter, setCounter] = useState(5);
+      const [delay, setDelay] = useState(5);
+      const [history, setHistory] = useState([]);
+
+      // Generate a random note from A to G
+      const generateRandomLetter = () => {
+        const letters = ["A", "B", "C", "D", "E", "F", "G"];
+        return letters[Math.floor(Math.random() * letters.length)];
+      };
+
+      useEffect(() => {
+        // Set an initial quiz note.
+        const firstLetter = generateRandomLetter();
+        setCurrentLetter(firstLetter);
+        setHistory([firstLetter]);
+        setCounter(delay);
+
+        // Start the countdown timer.
+        const countdownId = setInterval(() => {
+          setCounter(prev => (prev <= 1 ? delay : prev - 1));
+        }, 1000);
+
+        // Update the quiz note every 'delay' seconds.
+        const letterInterval = setInterval(() => {
+          const newLetter = generateRandomLetter();
+          setCurrentLetter(newLetter);
+          setHistory(prev => {
+            const newHistory = [...prev, newLetter];
+            return newHistory.length > 10 ? newHistory.slice(newHistory.length - 10) : newHistory;
+          });
+          setCounter(delay);
+        }, delay * 1000);
+
+        return () => {
+          clearInterval(countdownId);
+          clearInterval(letterInterval);
+        };
+      }, [delay]);
+
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50">
+          <div className="bg-white shadow-lg rounded-lg p-8 max-w-md text-center">
+            <h1 className="text-7xl font-bold text-blue-700 mb-4">{currentLetter}</h1>
+            <p className="text-2xl text-green-600 mb-6">Next letter in: {counter}s</p>
+            <div className="mb-6">
+              <label htmlFor="slider" className="block text-gray-700 font-medium mb-2">
+                Set Interval (seconds): <span className="font-bold text-blue-700">{delay}</span>
+              </label>
+              <input
+                id="slider"
+                type="range"
+                min="1"
+                max="30"
+                value={delay}
+                onChange={(e) => setDelay(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+          </div>
+          {history.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold text-blue-700 mb-2">Previous Letters:</h2>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {history.slice().reverse().map((letter, idx) => (
+                  <span key={idx} className="bg-green-100 text-green-800 px-4 py-2 rounded">
+                    {letter}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.render(<PianoKeyQuiz />, document.getElementById("root"));
+  </script>
+
+  <!-- Register the Service Worker for PWA Functionality -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js")
+          .then(registration => {
+            console.log("ServiceWorker registration successful with scope:", registration.scope);
+          })
+          .catch(error => {
+            console.error("ServiceWorker registration failed:", error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
