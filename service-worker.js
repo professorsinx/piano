@@ -3,6 +3,7 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/icon.png',
   'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css',
   'https://unpkg.com/react@17/umd/react.production.min.js',
   'https://unpkg.com/react-dom@17/umd/react-dom.production.min.js',
